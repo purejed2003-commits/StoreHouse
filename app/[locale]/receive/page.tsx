@@ -169,15 +169,17 @@ export default function ReceivePage() {
             ข้อมูลสินค้า
           </Typography>
 
-          <Autocomplete
+          <Autocomplete<Item, false, false, true>
             options={items}
-            getOptionLabel={(opt) => opt.name}
+            getOptionLabel={(opt) => typeof opt === "string" ? opt : opt.name}
             value={selectedItem}
             onChange={(_, newVal) => {
-              setSelectedItem(newVal);
-              if (newVal) {
+              if (newVal && typeof newVal !== "string") {
+                setSelectedItem(newVal);
                 setItemName(newVal.name);
                 setUnit(newVal.unit);
+              } else {
+                setSelectedItem(null);
               }
             }}
             freeSolo
