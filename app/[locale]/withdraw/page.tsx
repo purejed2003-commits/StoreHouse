@@ -33,6 +33,7 @@ export default function WithdrawPage() {
     supabase
       .from("items")
       .select("*")
+      .gt("current_stock", 0)
       .order("name")
       .then(({ data }) => setItems(data || []));
   }, []);
