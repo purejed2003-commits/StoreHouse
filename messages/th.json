@@ -1,0 +1,58 @@
+{
+  "App": {
+    "title": "คลังสินค้า",
+    "subtitle": "ระบบจัดการสต๊อกของ"
+  },
+  "Home": {
+    "welcome": "สวัสดี",
+    "receive": "รับของเข้า",
+    "withdraw": "เบิกของออก",
+    "history": "ประวัติรายการ",
+    "currentStock": "สต๊อกคงเหลือ",
+    "recentActivity": "รายการล่าสุด"
+  },
+  "Receive": {
+    "title": "รับของเข้า",
+    "scanBarcode": "สแกนบาร์โค้ด",
+    "itemName": "ชื่อสินค้า",
+    "itemNamePlaceholder": "เช่น น้ำตาล, แป้ง, น้ำมัน",
+    "quantity": "จำนวน",
+    "unit": "หน่วย",
+    "unitPlaceholder": "เช่น กก., ลิตร, ชิ้น",
+    "notes": "หมายเหตุ",
+    "notesPlaceholder": "บันทึกเพิ่มเติม (ถ้ามี)",
+    "save": "บันทึกรับของเข้า",
+    "saving": "กำลังบันทึก...",
+    "success": "บันทึกรับของเข้าสำเร็จ!",
+    "selectItem": "เลือกสินค้า",
+    "newItem": "เพิ่มสินค้าใหม่",
+    "category": "หมวดหมู่"
+  },
+  "Withdraw": {
+    "title": "เบิกของออก",
+    "scanBarcode": "สแกนบาร์โค้ด",
+    "itemName": "ชื่อสินค้า",
+    "itemNamePlaceholder": "เช่น น้ำตาล, แป้ง, น้ำมัน",
+    "quantity": "จำนวน",
+    "unit": "หน่วย",
+    "notes": "หมายเหตุ",
+    "notesPlaceholder": "บันทึกเพิ่มเติม (ถ้ามี)",
+    "save": "บันทึกเบิกของออก",
+    "saving": "กำลังบันทึก...",
+    "success": "บันทึกเบิกของออกสำเร็จ!",
+    "insufficientStock": "สต๊อกไม่พอ! มีเหลืออยู่"
+  },
+  "History": {
+    "title": "ประวัติรายการ",
+    "all": "ทั้งหมด",
+    "receive": "รับของเข้า",
+    "withdraw": "เบิกของออก",
+    "empty": "ยังไม่มีรายการ",
+    "by": "โดย"
+  },
+  "Stock": {
+    "title": "สต๊อกสินค้า",
+    "lowStock": "ใกล้หมด",
+    "outOfStock": "หมดแล้ว"
+  }
+}

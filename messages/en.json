@@ -1,0 +1,58 @@
+{
+  "App": {
+    "title": "StoreHouse",
+    "subtitle": "Stock Management System"
+  },
+  "Home": {
+    "welcome": "Hello",
+    "receive": "Receive Stock",
+    "withdraw": "Withdraw Stock",
+    "history": "Transaction History",
+    "currentStock": "Current Stock",
+    "recentActivity": "Recent Activity"
+  },
+  "Receive": {
+    "title": "Receive Stock",
+    "scanBarcode": "Scan Barcode",
+    "itemName": "Item Name",
+    "itemNamePlaceholder": "e.g. Sugar, Flour, Oil",
+    "quantity": "Quantity",
+    "unit": "Unit",
+    "unitPlaceholder": "e.g. kg, L, pcs",
+    "notes": "Notes",
+    "notesPlaceholder": "Additional notes (optional)",
+    "save": "Save Receive",
+    "saving": "Saving...",
+    "success": "Stock received successfully!",
+    "selectItem": "Select Item",
+    "newItem": "Add New Item",
+    "category": "Category"
+  },
+  "Withdraw": {
+    "title": "Withdraw Stock",
+    "scanBarcode": "Scan Barcode",
+    "itemName": "Item Name",
+    "itemNamePlaceholder": "e.g. Sugar, Flour, Oil",
+    "quantity": "Quantity",
+    "unit": "Unit",
+    "notes": "Notes",
+    "notesPlaceholder": "Additional notes (optional)",
+    "save": "Save Withdraw",
+    "saving": "Saving...",
+    "success": "Stock withdrawn successfully!",
+    "insufficientStock": "Insufficient stock! Available:"
+  },
+  "History": {
+    "title": "Transaction History",
+    "all": "All",
+    "receive": "Receive",
+    "withdraw": "Withdraw",
+    "empty": "No transactions yet",
+    "by": "by"
+  },
+  "Stock": {
+    "title": "Stock List",
+    "lowStock": "Low Stock",
+    "outOfStock": "Out of Stock"
+  }
+}
