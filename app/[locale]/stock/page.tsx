@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import {
   Box, Typography, Card, CircularProgress, IconButton,
-  TextField, InputAdornment, Chip, LinearProgress,
+  TextField, InputAdornment, Chip, Switch, FormControlLabel,
 } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import SearchIcon from "@mui/icons-material/Search";
@@ -15,6 +15,7 @@ export default function StockPage() {
   const [items, setItems] = useState<Item[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [showOutOfStock, setShowOutOfStock] = useState(false);
 
   useEffect(() => {
     loadItems();
@@ -30,12 +31,7 @@ export default function StockPage() {
     setLoading(false);
   };
 
-  const filtered = items.filter((item) =>
-    item.name.toLowerCase().includes(search.toLowerCase()) ||
-    (item.category && item.category.toLowerCase().includes(search.toLowerCase()))
-  );
-
-  const getStockStatus = (item: Item) => {
+  const getStatus = (item: Item) => {
     const threshold = item.low_stock_threshold || 5;
     if (item.current_stock <= 0) return "out";
     if (item.current_stock <= threshold) return "low";
@@ -43,58 +39,71 @@ export default function StockPage() {
   };
 
   const statusConfig = {
-    out: { color: "#dc2626", bg: "#fee2e2", label: "หมดแล้ว", icon: "❌" },
-    low: { color: "#ea580c", bg: "#fff7ed", label: "ใกล้หมด", icon: "⚠️" },
-    ok: { color: "#16a34a", bg: "#dcfce7", label: "พอเพียง", icon: "✅" },
+    out: { color: "#dc2626", bg: "#fee2e2", label: "หมดแล้ว", icon: "❌", order: 3 },
+    low: { color: "#ea580c", bg: "#fff7ed", label: "ใกล้หมด", icon: "⚠️", order: 1 },
+    ok:  { color: "#16a34a", bg: "#dcfce7", label: "มีของ",   icon: "✅", order: 2 },
   };
 
-  const outOfStock = filtered.filter((i) => getStockStatus(i) === "out").length;
-  const lowStock = filtered.filter((i) => getStockStatus(i) === "low").length;
+  const filtered = items
+    .filter((item) => {
+      if (!showOutOfStock && item.current_stock <= 0) return false;
+      if (!search) return true;
+      return (
+        item.name.toLowerCase().includes(search.toLowerCase()) ||
+        (item.category?.toLowerCase().includes(search.toLowerCase()))
+      );
+    })
+    .sort((a, b) => statusConfig[getStatus(a)].order - statusConfig[getStatus(b)].order);
+
+  const lowCount  = items.filter((i) => getStatus(i) === "low").length;
+  const outCount  = items.filter((i) => getStatus(i) === "out").length;
+  const okCount   = items.filter((i) => getStatus(i) === "ok").length;
 
   return (
-    <Box sx={{ minHeight: "100vh", bgcolor: "#eff6ff", pb: 4 }}>
+    <Box sx={{ minHeight: "100vh", bgcolor: "#eff6ff", pb: 10 }}>
       {/* Header */}
       <Box
         sx={{
           background: "linear-gradient(135deg, #1e40af 0%, #2563eb 100%)",
-          px: 2,
-          pt: 4,
-          pb: 3,
+          px: 2, pt: 4, pb: 3,
           borderRadius: "0 0 28px 28px",
           boxShadow: "0 4px 20px rgba(29,78,216,0.3)",
         }}
       >
         <Box display="flex" alignItems="center" gap={2} mb={2}>
-          <IconButton onClick={() => router.push("/")} sx={{ color: "white", bgcolor: "rgba(255,255,255,0.2)", "&:hover": { bgcolor: "rgba(255,255,255,0.3)" } }}>
+          <IconButton
+            onClick={() => router.push("/")}
+            sx={{ color: "white", bgcolor: "rgba(255,255,255,0.2)" }}
+          >
             <ArrowBackIcon />
           </IconButton>
           <Box>
             <Typography sx={{ color: "white", fontSize: "1.5rem", fontWeight: 800 }}>
               📊 สต๊อกสินค้า
             </Typography>
-            <Typography sx={{ color: "rgba(255,255,255,0.8)", fontSize: "0.9rem" }}>
-              รายการสินค้าทั้งหมดในคลัง
+            <Typography sx={{ color: "rgba(255,255,255,0.75)", fontSize: "0.9rem" }}>
+              ของที่มีในคลังตอนนี้
             </Typography>
           </Box>
         </Box>
 
-        {/* Summary chips */}
+        {/* Summary row */}
         {!loading && (
           <Box display="flex" gap={1.5} flexWrap="wrap">
             <Chip
-              label={`ทั้งหมด ${filtered.length} รายการ`}
-              sx={{ bgcolor: "rgba(255,255,255,0.2)", color: "white", fontWeight: 700, fontSize: "0.9rem" }}
+              label={`✅ มีของ ${okCount}`}
+              sx={{ bgcolor: "#dcfce7", color: "#16a34a", fontWeight: 800, fontSize: "0.95rem" }}
             />
-            {outOfStock > 0 && (
+            {lowCount > 0 && (
               <Chip
-                label={`❌ หมด ${outOfStock}`}
-                sx={{ bgcolor: "#fee2e2", color: "#dc2626", fontWeight: 700, fontSize: "0.9rem" }}
+                label={`⚠️ ใกล้หมด ${lowCount}`}
+                sx={{ bgcolor: "#fff7ed", color: "#ea580c", fontWeight: 800, fontSize: "0.95rem" }}
               />
             )}
-            {lowStock > 0 && (
+            {outCount > 0 && (
               <Chip
-                label={`⚠️ ใกล้หมด ${lowStock}`}
-                sx={{ bgcolor: "#fff7ed", color: "#ea580c", fontWeight: 700, fontSize: "0.9rem" }}
+                label={`❌ หมดแล้ว ${outCount}`}
+                sx={{ bgcolor: "#fee2e2", color: "#dc2626", fontWeight: 800, fontSize: "0.95rem" }}
               />
             )}
           </Box>
@@ -109,76 +118,80 @@ export default function StockPage() {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           sx={{
-            mb: 3,
-            "& .MuiOutlinedInput-root": {
-              bgcolor: "white",
-              borderRadius: "16px",
-              fontSize: "1.05rem",
-            },
+            mb: 2,
+            "& .MuiOutlinedInput-root": { bgcolor: "white", borderRadius: "16px", fontSize: "1.1rem" },
           }}
           InputProps={{
             startAdornment: (
               <InputAdornment position="start">
-                <SearchIcon sx={{ color: "#9ca3af", fontSize: "1.4rem" }} />
+                <SearchIcon sx={{ color: "#9ca3af", fontSize: "1.5rem" }} />
               </InputAdornment>
             ),
           }}
         />
 
+        {/* Toggle แสดงของหมด */}
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            bgcolor: "white",
+            borderRadius: "16px",
+            px: 2.5,
+            py: 1.5,
+            mb: 3,
+            boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
+          }}
+        >
+          <Typography sx={{ fontSize: "1.05rem", fontWeight: 600, color: "#374151" }}>
+            ❌ แสดงของที่หมดแล้ว
+          </Typography>
+          <Switch
+            checked={showOutOfStock}
+            onChange={(e) => setShowOutOfStock(e.target.checked)}
+            sx={{
+              "& .MuiSwitch-switchBase.Mui-checked": { color: "#dc2626" },
+              "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track": { bgcolor: "#dc2626" },
+            }}
+          />
+        </Box>
+
         {loading ? (
           <Box display="flex" justifyContent="center" py={6}>
-            <CircularProgress sx={{ color: "#1e40af" }} size={40} />
+            <CircularProgress sx={{ color: "#1e40af" }} size={48} />
           </Box>
         ) : filtered.length === 0 ? (
-          <Card
-            sx={{
-              borderRadius: "20px",
-              p: 5,
-              textAlign: "center",
-              bgcolor: "white",
-              border: "2px dashed #e2e8f0",
-            }}
-          >
-            <Typography sx={{ fontSize: "3rem", mb: 2 }}>📭</Typography>
+          <Card sx={{ borderRadius: "20px", p: 5, textAlign: "center", bgcolor: "white", border: "2px dashed #e2e8f0" }}>
+            <Typography sx={{ fontSize: "3rem", mb: 1 }}>📭</Typography>
             <Typography sx={{ fontSize: "1.2rem", color: "#94a3b8", fontWeight: 600 }}>
-              {search ? "ไม่พบสินค้าที่ค้นหา" : "ยังไม่มีสินค้าในคลัง"}
+              {search ? "ไม่พบสินค้าที่ค้นหา" : "ไม่มีสินค้าในคลัง"}
             </Typography>
-            {!search && (
-              <Typography sx={{ fontSize: "1rem", color: "#cbd5e1", mt: 1 }}>
-                เริ่มบันทึกรับของเข้าเพื่อเพิ่มสินค้า
-              </Typography>
-            )}
           </Card>
         ) : (
           <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
             {filtered.map((item) => {
-              const status = getStockStatus(item);
+              const status = getStatus(item);
               const cfg = statusConfig[status];
-              const threshold = item.low_stock_threshold || 5;
-              const maxVal = Math.max(item.current_stock, threshold * 3, 10);
-              const pct = Math.min(100, (item.current_stock / maxVal) * 100);
 
               return (
                 <Card
                   key={item.id}
-                  onClick={() => router.push("/receive")}
                   sx={{
                     borderRadius: "20px",
                     p: 3,
                     bgcolor: "white",
                     boxShadow: "0 2px 10px rgba(0,0,0,0.06)",
-                    cursor: "pointer",
-                    transition: "transform 0.15s",
-                    "&:active": { transform: "scale(0.98)" },
-                    borderLeft: `4px solid ${cfg.color}`,
+                    borderLeft: `6px solid ${cfg.color}`,
                   }}
                 >
-                  <Box display="flex" alignItems="flex-start" justifyContent="space-between" mb={1.5}>
+                  <Box display="flex" alignItems="center" justifyContent="space-between">
+                    {/* Left: ชื่อ + หมวด */}
                     <Box flex={1} minWidth={0}>
                       <Typography
                         sx={{
-                          fontSize: "1.15rem",
-                          fontWeight: 700,
+                          fontSize: "1.25rem",
+                          fontWeight: 800,
                           color: "#1f2937",
                           overflow: "hidden",
                           textOverflow: "ellipsis",
@@ -188,59 +201,51 @@ export default function StockPage() {
                         {item.name}
                       </Typography>
                       {item.category && (
-                        <Typography sx={{ fontSize: "0.85rem", color: "#94a3b8", mt: 0.25 }}>
+                        <Typography sx={{ fontSize: "0.9rem", color: "#94a3b8", mt: 0.25 }}>
                           {item.category}
                         </Typography>
                       )}
+                      <Chip
+                        label={`${cfg.icon} ${cfg.label}`}
+                        size="small"
+                        sx={{
+                          mt: 1,
+                          bgcolor: cfg.bg,
+                          color: cfg.color,
+                          fontWeight: 700,
+                          fontSize: "0.85rem",
+                          height: 26,
+                        }}
+                      />
                     </Box>
-                    <Box sx={{ textAlign: "right", flexShrink: 0, ml: 2 }}>
+
+                    {/* Right: จำนวน */}
+                    <Box
+                      sx={{
+                        ml: 2,
+                        flexShrink: 0,
+                        textAlign: "center",
+                        bgcolor: cfg.bg,
+                        borderRadius: "16px",
+                        px: 2.5,
+                        py: 1.5,
+                        minWidth: 72,
+                      }}
+                    >
                       <Typography
                         sx={{
-                          fontSize: "1.6rem",
-                          fontWeight: 800,
+                          fontSize: "2rem",
+                          fontWeight: 900,
                           color: cfg.color,
                           lineHeight: 1,
                         }}
                       >
                         {item.current_stock}
                       </Typography>
-                      <Typography sx={{ fontSize: "0.85rem", color: "#9ca3af" }}>
+                      <Typography sx={{ fontSize: "0.85rem", color: cfg.color, fontWeight: 600, mt: 0.25 }}>
                         {item.unit}
                       </Typography>
                     </Box>
-                  </Box>
-
-                  <LinearProgress
-                    variant="determinate"
-                    value={pct}
-                    sx={{
-                      height: 8,
-                      borderRadius: 4,
-                      bgcolor: "#f1f5f9",
-                      "& .MuiLinearProgress-bar": {
-                        bgcolor: cfg.color,
-                        borderRadius: 4,
-                      },
-                    }}
-                  />
-
-                  <Box display="flex" justifyContent="space-between" alignItems="center" mt={1}>
-                    <Chip
-                      label={`${cfg.icon} ${cfg.label}`}
-                      size="small"
-                      sx={{
-                        bgcolor: cfg.bg,
-                        color: cfg.color,
-                        fontWeight: 700,
-                        fontSize: "0.8rem",
-                        height: 24,
-                      }}
-                    />
-                    {item.barcode && (
-                      <Typography sx={{ fontSize: "0.75rem", color: "#cbd5e1", fontFamily: "monospace" }}>
-                        {item.barcode}
-                      </Typography>
-                    )}
                   </Box>
                 </Card>
               );
