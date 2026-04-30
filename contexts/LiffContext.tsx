@@ -15,6 +15,7 @@ interface LiffContextType {
   profile: LiffProfile | null;
   isLoggedIn: boolean;
   isLoading: boolean;
+  isDevMode: boolean;
   error: string | null;
 }
 
@@ -24,6 +25,7 @@ export function LiffProvider({ children }: { children: React.ReactNode }) {
   const [liffInstance, setLiffInstance] = useState<Liff | null>(null);
   const [profile, setProfile] = useState<LiffProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isDevMode, setIsDevMode] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -33,6 +35,7 @@ export function LiffProvider({ children }: { children: React.ReactNode }) {
         if (result) {
           setLiffInstance(result.liff);
           setProfile(result.profile);
+          if (!result.liff) setIsDevMode(true);
         }
       } catch (err: any) {
         setError(err.message || "ไม่สามารถเชื่อมต่อ LINE ได้");
@@ -50,6 +53,7 @@ export function LiffProvider({ children }: { children: React.ReactNode }) {
       profile,
       isLoggedIn: !!profile,
       isLoading,
+      isDevMode,
       error,
     }}>
       {children}

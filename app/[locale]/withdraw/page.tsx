@@ -15,7 +15,7 @@ import { supabase, Item } from "@/lib/supabase";
 
 export default function WithdrawPage() {
   const router = useRouter();
-  const { liff, profile } = useLiff();
+  const { liff, profile, isDevMode } = useLiff();
 
   const [items, setItems] = useState<Item[]>([]);
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
@@ -170,7 +170,7 @@ export default function WithdrawPage() {
             "&:hover": { borderWidth: 2, bgcolor: "#fee2e2" },
           }}
         >
-          {scanning ? "กำลังสแกน..." : "สแกนบาร์โค้ด / QR"}
+          {scanning ? "กำลังสแกน..." : isDevMode ? "สแกนบาร์โค้ด (ใช้ได้เฉพาะใน LINE)" : "สแกนบาร์โค้ด / QR"}
         </Button>
 
         {/* Item Name */}

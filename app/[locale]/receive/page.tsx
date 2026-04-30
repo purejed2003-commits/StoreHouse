@@ -15,7 +15,7 @@ import { supabase, Item } from "@/lib/supabase";
 
 export default function ReceivePage() {
   const router = useRouter();
-  const { liff, profile } = useLiff();
+  const { liff, profile, isDevMode } = useLiff();
 
   const [items, setItems] = useState<Item[]>([]);
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
@@ -160,7 +160,7 @@ export default function ReceivePage() {
             "&:hover": { borderWidth: 2, bgcolor: "#dcfce7" },
           }}
         >
-          {scanning ? "กำลังสแกน..." : "สแกนบาร์โค้ด / QR"}
+          {scanning ? "กำลังสแกน..." : isDevMode ? "สแกนบาร์โค้ด (ใช้ได้เฉพาะใน LINE)" : "สแกนบาร์โค้ด / QR"}
         </Button>
 
         {/* Item Name */}
