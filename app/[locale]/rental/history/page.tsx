@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Box, Typography, Card, CircularProgress, IconButton, Chip, MenuItem, TextField, Button, Snackbar, Alert } from "@mui/material";
+import { Box, Typography, Card, CircularProgress, IconButton, Chip, TextField, Button, Snackbar, Alert } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { useRouter } from "@/i18n/routing";
 import { supabase } from "@/lib/supabase";
@@ -12,6 +12,8 @@ type Reading = {
   id: string; unit_name: string; reading_month: string;
   previous_reading: number; current_reading: number; units_used: number;
   electricity_rate: number; electricity_cost: number;
+  water_previous_reading: number; water_current_reading: number; water_units_used: number;
+  water_rate: number; water_cost: number;
   rent_amount: number; total_amount: number;
   is_paid: boolean; paid_date: string | null; notes: string | null;
   recorded_by: string | null; created_at: string;
@@ -45,8 +47,8 @@ export default function RentalHistoryPage() {
     loadReadings();
   };
 
-  const totalAll = readings.reduce((s, r) => s + r.total_amount, 0);
-  const totalPaid = readings.filter(r => r.is_paid).reduce((s, r) => s + r.total_amount, 0);
+  const totalAll    = readings.reduce((s, r) => s + r.total_amount, 0);
+  const totalPaid   = readings.filter(r => r.is_paid).reduce((s, r) => s + r.total_amount, 0);
   const totalUnpaid = totalAll - totalPaid;
 
   return (
@@ -56,12 +58,11 @@ export default function RentalHistoryPage() {
         <Box display="flex" alignItems="center" gap={2} mb={2}>
           <IconButton onClick={() => router.push("/")} sx={{ color: "white", bgcolor: "rgba(255,255,255,0.2)" }}><ArrowBackIcon /></IconButton>
           <Box>
-            <Typography sx={{ color: "white", fontSize: "1.5rem", fontWeight: 800 }}>📋 ประวัติค่าเช่า/ค่าไฟ</Typography>
+            <Typography sx={{ color: "white", fontSize: "1.5rem", fontWeight: 800 }}>📋 ประวัติค่าเช่า/ค่าไฟ/ค่าน้ำ</Typography>
             <Typography sx={{ color: "rgba(255,255,255,0.8)", fontSize: "0.9rem" }}>กดที่รายการเพื่อเปลี่ยนสถานะชำระ</Typography>
           </Box>
         </Box>
 
-        {/* Summary */}
         {!loading && (
           <Box display="flex" gap={1.5} flexWrap="wrap">
             <Chip label={`รวม ฿${totalAll.toLocaleString()}`} sx={{ bgcolor: "rgba(255,255,255,0.2)", color: "white", fontWeight: 800, fontSize: "0.9rem" }} />
@@ -72,7 +73,6 @@ export default function RentalHistoryPage() {
       </Box>
 
       <Box sx={{ px: 3, mt: 3 }}>
-        {/* เลือกเดือน */}
         <TextField
           fullWidth type="month" value={filterMonth}
           onChange={e => setFilterMonth(e.target.value)}
@@ -88,74 +88,93 @@ export default function RentalHistoryPage() {
             <Typography sx={{ fontSize: "2.5rem", mb: 1 }}>📭</Typography>
             <Typography sx={{ fontSize: "1.1rem", color: "#94a3b8", fontWeight: 600 }}>ยังไม่มีข้อมูลเดือนนี้</Typography>
             <Button onClick={() => router.push("/rental/electricity")} variant="outlined" sx={{ mt: 2, borderRadius: "12px", fontSize: "1rem" }}>
-              ⚡ บันทึกค่าไฟ
+              ⚡ บันทึกค่าไฟ-ค่าน้ำ
             </Button>
           </Card>
         ) : (
           <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-            {readings.map((r) => (
-              <Card
-                key={r.id}
-                onClick={() => togglePaid(r)}
-                sx={{
-                  borderRadius: "18px", p: 3, bgcolor: "white",
-                  boxShadow: "0 2px 10px rgba(0,0,0,0.06)",
-                  borderLeft: `5px solid ${r.is_paid ? "#16a34a" : "#f59e0b"}`,
-                  cursor: "pointer", transition: "transform 0.15s",
-                  "&:active": { transform: "scale(0.98)" },
-                  opacity: r.is_paid ? 0.85 : 1,
-                }}
-              >
-                <Box display="flex" justifyContent="space-between" alignItems="flex-start">
-                  <Box>
-                    <Typography sx={{ fontSize: "1.15rem", fontWeight: 800, color: "#1f2937" }}>{r.unit_name}</Typography>
-                    <Typography sx={{ fontSize: "0.88rem", color: "#64748b", mt: 0.25 }}>
-                      มิตเตอร์ {r.previous_reading} → {r.current_reading} ({r.units_used} หน่วย)
-                    </Typography>
+            {readings.map((r) => {
+              const hasElec  = r.electricity_rate > 0;
+              const hasWater = r.water_rate > 0;
+              return (
+                <Card
+                  key={r.id}
+                  onClick={() => togglePaid(r)}
+                  sx={{
+                    borderRadius: "18px", p: 3, bgcolor: "white",
+                    boxShadow: "0 2px 10px rgba(0,0,0,0.06)",
+                    borderLeft: `5px solid ${r.is_paid ? "#16a34a" : "#f59e0b"}`,
+                    cursor: "pointer", transition: "transform 0.15s",
+                    "&:active": { transform: "scale(0.98)" },
+                    opacity: r.is_paid ? 0.85 : 1,
+                  }}
+                >
+                  <Box display="flex" justifyContent="space-between" alignItems="flex-start">
+                    <Box>
+                      <Typography sx={{ fontSize: "1.15rem", fontWeight: 800, color: "#1f2937" }}>{r.unit_name}</Typography>
+                      {hasElec && (
+                        <Typography sx={{ fontSize: "0.85rem", color: "#64748b", mt: 0.25 }}>
+                          ⚡ {r.previous_reading} → {r.current_reading} ({r.units_used} หน่วย)
+                        </Typography>
+                      )}
+                      {hasWater && (
+                        <Typography sx={{ fontSize: "0.85rem", color: "#64748b", mt: 0.1 }}>
+                          💧 {r.water_previous_reading} → {r.water_current_reading} ({r.water_units_used} หน่วย)
+                        </Typography>
+                      )}
+                    </Box>
+                    <Chip
+                      label={r.is_paid ? "✅ รับแล้ว" : "⏳ ค้างชำระ"}
+                      sx={{
+                        bgcolor: r.is_paid ? "#dcfce7" : "#fef3c7",
+                        color: r.is_paid ? "#16a34a" : "#d97706",
+                        fontWeight: 800, fontSize: "0.85rem",
+                      }}
+                    />
                   </Box>
-                  <Chip
-                    label={r.is_paid ? "✅ รับแล้ว" : "⏳ ค้างชำระ"}
-                    sx={{
-                      bgcolor: r.is_paid ? "#dcfce7" : "#fef3c7",
-                      color: r.is_paid ? "#16a34a" : "#d97706",
-                      fontWeight: 800, fontSize: "0.85rem",
-                    }}
-                  />
-                </Box>
 
-                {/* ราคารายละเอียด */}
-                <Box sx={{ mt: 2, p: 2, bgcolor: "#f8fafc", borderRadius: "12px" }}>
-                  <Box display="flex" justifyContent="space-between" mb={0.75}>
-                    <Typography sx={{ fontSize: "0.95rem", color: "#64748b" }}>ค่าไฟ ({r.electricity_rate} × {r.units_used})</Typography>
-                    <Typography sx={{ fontSize: "0.95rem", fontWeight: 700, color: "#d97706" }}>฿{r.electricity_cost.toLocaleString()}</Typography>
+                  {/* รายละเอียด */}
+                  <Box sx={{ mt: 2, p: 2, bgcolor: "#f8fafc", borderRadius: "12px" }}>
+                    {hasElec && (
+                      <Box display="flex" justifyContent="space-between" mb={0.75}>
+                        <Typography sx={{ fontSize: "0.95rem", color: "#64748b" }}>⚡ ค่าไฟ ({r.electricity_rate} × {r.units_used})</Typography>
+                        <Typography sx={{ fontSize: "0.95rem", fontWeight: 700, color: "#d97706" }}>฿{r.electricity_cost.toLocaleString()}</Typography>
+                      </Box>
+                    )}
+                    {hasWater && (
+                      <Box display="flex" justifyContent="space-between" mb={0.75}>
+                        <Typography sx={{ fontSize: "0.95rem", color: "#64748b" }}>💧 ค่าน้ำ ({r.water_rate} × {r.water_units_used})</Typography>
+                        <Typography sx={{ fontSize: "0.95rem", fontWeight: 700, color: "#0891b2" }}>฿{r.water_cost.toLocaleString()}</Typography>
+                      </Box>
+                    )}
+                    <Box display="flex" justifyContent="space-between" mb={0.75}>
+                      <Typography sx={{ fontSize: "0.95rem", color: "#64748b" }}>🏠 ค่าเช่า</Typography>
+                      <Typography sx={{ fontSize: "0.95rem", fontWeight: 700, color: "#7c3aed" }}>฿{r.rent_amount.toLocaleString()}</Typography>
+                    </Box>
+                    <Box display="flex" justifyContent="space-between">
+                      <Typography sx={{ fontSize: "1.05rem", fontWeight: 800 }}>รวม</Typography>
+                      <Typography sx={{ fontSize: "1.4rem", fontWeight: 900, color: r.is_paid ? "#16a34a" : "#1f2937" }}>
+                        ฿{r.total_amount.toLocaleString()}
+                      </Typography>
+                    </Box>
                   </Box>
-                  <Box display="flex" justifyContent="space-between" mb={0.75}>
-                    <Typography sx={{ fontSize: "0.95rem", color: "#64748b" }}>ค่าเช่า</Typography>
-                    <Typography sx={{ fontSize: "0.95rem", fontWeight: 700, color: "#7c3aed" }}>฿{r.rent_amount.toLocaleString()}</Typography>
-                  </Box>
-                  <Box display="flex" justifyContent="space-between">
-                    <Typography sx={{ fontSize: "1.05rem", fontWeight: 800 }}>รวม</Typography>
-                    <Typography sx={{ fontSize: "1.4rem", fontWeight: 900, color: r.is_paid ? "#16a34a" : "#1f2937" }}>
-                      ฿{r.total_amount.toLocaleString()}
-                    </Typography>
-                  </Box>
-                </Box>
 
-                {r.notes && (
-                  <Typography sx={{ fontSize: "0.85rem", color: "#94a3b8", mt: 1.5, fontStyle: "italic" }}>
-                    "{r.notes}"
+                  {r.notes && (
+                    <Typography sx={{ fontSize: "0.85rem", color: "#94a3b8", mt: 1.5, fontStyle: "italic" }}>
+                      "{r.notes}"
+                    </Typography>
+                  )}
+                  {r.is_paid && r.paid_date && (
+                    <Typography sx={{ fontSize: "0.8rem", color: "#16a34a", mt: 0.75, fontWeight: 600 }}>
+                      ✅ รับเงินเมื่อ {format(new Date(r.paid_date), "d MMM HH:mm", { locale: th })}
+                    </Typography>
+                  )}
+                  <Typography sx={{ fontSize: "0.75rem", color: "#cbd5e1", mt: 0.5 }}>
+                    บันทึกโดย {r.recorded_by || "ไม่ระบุ"} • {format(new Date(r.created_at), "d MMM HH:mm", { locale: th })}
                   </Typography>
-                )}
-                {r.is_paid && r.paid_date && (
-                  <Typography sx={{ fontSize: "0.8rem", color: "#16a34a", mt: 0.75, fontWeight: 600 }}>
-                    ✅ รับเงินเมื่อ {format(new Date(r.paid_date), "d MMM HH:mm", { locale: th })}
-                  </Typography>
-                )}
-                <Typography sx={{ fontSize: "0.75rem", color: "#cbd5e1", mt: 0.5 }}>
-                  บันทึกโดย {r.recorded_by || "ไม่ระบุ"} • {format(new Date(r.created_at), "d MMM HH:mm", { locale: th })}
-                </Typography>
-              </Card>
-            ))}
+                </Card>
+              );
+            })}
           </Box>
         )}
       </Box>

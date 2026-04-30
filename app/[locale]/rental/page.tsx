@@ -8,7 +8,7 @@ import { supabase } from "@/lib/supabase";
 
 type Unit = {
   id: string; name: string; type: "room" | "house" | "parking";
-  rent_price: number; electricity_rate: number;
+  rent_price: number; electricity_rate: number; water_rate: number;
   tenant_name: string | null; tenant_phone: string | null;
   is_occupied: boolean; sort_order: number;
 };
@@ -27,6 +27,7 @@ export default function RentalPage() {
   const [editPhone, setEditPhone] = useState("");
   const [editRent, setEditRent] = useState(0);
   const [editRate, setEditRate] = useState(8);
+  const [editWaterRate, setEditWaterRate] = useState(16);
   const [editOccupied, setEditOccupied] = useState(false);
   const [saving, setSaving] = useState(false);
 
@@ -46,6 +47,7 @@ export default function RentalPage() {
     setEditPhone(u.tenant_phone || "");
     setEditRent(u.rent_price);
     setEditRate(u.electricity_rate);
+    setEditWaterRate(u.water_rate);
     setEditOccupied(u.is_occupied);
   };
 
@@ -58,6 +60,7 @@ export default function RentalPage() {
       tenant_phone: editPhone || null,
       rent_price: editRent,
       electricity_rate: editRate,
+      water_rate: editWaterRate,
       is_occupied: editOccupied,
     }).eq("id", editUnit.id);
     setSaving(false);
@@ -117,7 +120,7 @@ export default function RentalPage() {
                   </Typography>
                   {u.electricity_rate > 0 && (
                     <Typography sx={{ fontSize: "0.78rem", color: "#f59e0b" }}>
-                      ⚡{u.electricity_rate} บ./หน่วย
+                      ⚡{u.electricity_rate} 💧{u.water_rate} บ./หน่วย
                     </Typography>
                   )}
                 </Box>
@@ -178,7 +181,8 @@ export default function RentalPage() {
           <TextField label="ชื่อผู้เช่า" value={editTenant} onChange={e => setEditTenant(e.target.value)} fullWidth placeholder="ชื่อ-นามสกุล" InputProps={{ sx: { fontSize: "1.05rem" } }} />
           <TextField label="เบอร์โทร" value={editPhone} onChange={e => setEditPhone(e.target.value)} fullWidth placeholder="0812345678" InputProps={{ sx: { fontSize: "1.05rem" } }} />
           <TextField label="ค่าเช่า (บาท/เดือน)" type="number" value={editRent} onChange={e => setEditRent(Number(e.target.value))} fullWidth InputProps={{ sx: { fontSize: "1.05rem" } }} />
-          <TextField label="ราคาไฟ (บาท/หน่วย)" type="number" value={editRate} onChange={e => setEditRate(Number(e.target.value))} fullWidth helperText="ห้อง = 8, บ้าน = 16, ที่จอดรถ = 0" InputProps={{ sx: { fontSize: "1.05rem" } }} />
+          <TextField label="ค่าไฟ (บาท/หน่วย)" type="number" value={editRate} onChange={e => setEditRate(Number(e.target.value))} fullWidth helperText="ห้อง = 8, บ้าน = 16, ที่จอดรถ = 0" InputProps={{ sx: { fontSize: "1.05rem" } }} />
+          <TextField label="ค่าน้ำ (บาท/หน่วย)" type="number" value={editWaterRate} onChange={e => setEditWaterRate(Number(e.target.value))} fullWidth helperText="ห้อง/บ้าน = 16, ที่จอดรถ = 0" InputProps={{ sx: { fontSize: "1.05rem" } }} />
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2.5, gap: 1 }}>
           <Button onClick={() => setEditUnit(null)} sx={{ fontSize: "1rem" }}>ยกเลิก</Button>
