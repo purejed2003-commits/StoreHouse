@@ -188,7 +188,7 @@ export default function ReceivePage() {
               <TextField
                 {...params}
                 label="ชื่อสินค้า *"
-                placeholder="เช่น น้ำตาล, แป้งสาลี, น้ำมันพืช"
+                placeholder="พิมพ์ชื่อสินค้าเพื่อค้นหา หรือพิมพ์ชื่อใหม่"
                 sx={{ mb: 2.5 }}
                 InputProps={{
                   ...params.InputProps,

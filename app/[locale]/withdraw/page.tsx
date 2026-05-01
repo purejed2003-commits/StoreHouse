@@ -179,22 +179,22 @@ export default function WithdrawPage() {
             ข้อมูลสินค้า
           </Typography>
 
-          <Autocomplete
+          <Autocomplete<Item, false, false, false>
             options={items}
-            getOptionLabel={(opt) => typeof opt === "string" ? opt : `${opt.name} (คงเหลือ: ${opt.current_stock} ${opt.unit})`}
+            getOptionLabel={(opt) => opt.name}
+            isOptionEqualToValue={(opt, val) => opt.id === val.id}
             value={selectedItem}
             onChange={(_, newVal) => {
-              if (newVal && typeof newVal !== "string") {
-                setSelectedItem(newVal);
-                setItemName(newVal.name);
-                setUnit(newVal.unit);
-              }
+              setSelectedItem(newVal);
+              setItemName(newVal?.name || "");
+              setUnit(newVal?.unit || "");
             }}
+            noOptionsText="ไม่พบสินค้านี้ในคลัง (มีสต๊อก > 0)"
             renderInput={(params) => (
               <TextField
                 {...params}
-                label="ชื่อสินค้า *"
-                placeholder="พิมพ์หรือเลือกสินค้าจากคลัง"
+                label="ค้นหาสินค้า *"
+                placeholder="พิมพ์ชื่อสินค้าเพื่อค้นหา..."
                 sx={{ mb: 2.5 }}
                 InputProps={{
                   ...params.InputProps,
@@ -205,9 +205,9 @@ export default function WithdrawPage() {
             )}
             renderOption={(props, option) => (
               <li {...props} key={option.id}>
-                <Box>
-                  <Typography sx={{ fontWeight: 600, fontSize: "1rem" }}>{option.name}</Typography>
-                  <Typography sx={{ fontSize: "0.85rem", color: option.current_stock <= (option.low_stock_threshold || 5) ? "#dc2626" : "#16a34a", fontWeight: 600 }}>
+                <Box sx={{ py: 0.5 }}>
+                  <Typography sx={{ fontWeight: 700, fontSize: "1.05rem" }}>{option.name}</Typography>
+                  <Typography sx={{ fontSize: "0.88rem", color: option.current_stock <= (option.low_stock_threshold || 5) ? "#dc2626" : "#16a34a", fontWeight: 600 }}>
                     คงเหลือ: {option.current_stock} {option.unit}
                     {option.current_stock <= (option.low_stock_threshold || 5) && " ⚠️ ใกล้หมด"}
                   </Typography>
